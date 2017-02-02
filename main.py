@@ -1,6 +1,5 @@
 """
-https://developers.google.com/maps/documentation/geocoding/geocoding-strategies
-https://developers.google.com/maps/documentation/geocoding/usage-limits?authuser=2
+https://developers.google.com/places/web-service/intro
 
 """
 
@@ -19,7 +18,7 @@ db_interval = 100
 # second:meter = 1:30 (approx.)
 # degree:meter = 1/60/60:30 (approx.)
 ###
-unit = 30
+unit = 50 # interval size
 radius = int(30 * np.sqrt(2) / 2 * unit)
 radius = int(radius/100)*100 
 
@@ -27,7 +26,8 @@ radius = int(radius/100)*100
 # define the ranges of lat and lng
 ###
 step = 1/60/60 * unit #1초 = about 30m or 24m
-lat_rng = np.arange(35.50, 35.75, step)
+# lat_rng = np.arange(35.50, 35.75, step)
+lat_rng = np.arange(35.68, 35.75, step)
 lng_rng = np.arange(139.60, 139.90, step)
 # lat_rng = [35.533333]
 # lng_rng = [139.700000]
@@ -38,28 +38,60 @@ print('(#lat, #lng, #lat*lng) = ({}, {}, {})'.format(
     len(lat_rng), len(lng_rng), num_query))
 
 types = (
+    # #tranportation
+    # 'subway_station',
+    # 'train_station',
+    #regional or historical
+    'synagogue',
     'place_of_worship',
-    'book_store',
-    'museum',
-    'art_gallery',
-    'library',
-    'painter',
-#    'clothing_store',
-#    'department_store',
-#    'jewelry_store',
-#    'shoe_store',
-#    'shopping_mall',
-    'subway_station',
-    'train_station',
+    'mosque',
+    'hindu_temple',
+    #amusement
     'amusement_park',
     'aquarium',
-    'casino',
-    'night_club',
     'park',
     'zoo',
     'stadium',
+    'city_hall',
+    ###
+    # #restaurant
+    # 'restaurant',
+    # 'food',
+    # 'meal_takeaway',
+    # #bakery and cafe
+    # 'bakery',
+    # 'cafe',
+    # #bar
+    # 'bar',
+    # #hotel
+    # 'lodging',
+    # #culture
+    # 'book_store',
+    # 'museum',
+    # 'art_gallery',
+    # 'library',
+    # 'painter',
+    # # store
+    # 'shopping_mall',
+    # 'department_store',
+    # 'store', #invalid
+    # # - clothing
+    # 'clothing_store', #invalid
+    # 'shoe_store',
+    # 'jewelry_store',
+    # # - eletronics and hardware
+    # 'electronics_store',
+    # 'hardware_store',
+    # # - home goods and furniture
+    # 'home_goods_store',
+    # 'furniture_store',
+    # # - liquor
+    # 'liquor_store',
+    # #adult
+    # 'casino',
+    # 'night_club',
 )
-
+print('types = {}'.format('|'.join(types)))
 
 if __name__ == "__main__":
     #db cursor
@@ -77,7 +109,7 @@ if __name__ == "__main__":
     api = api_caller.NearbySearchCaller(language='en', types=types)
 
     #crawling
-    data_dict = {} #list of crawled data
+    data_dict = {}
     for i, (lat, lng) in enumerate(product(lat_rng, lng_rng), 1):
         print('{:6}/{}({:5.1f}%): (lat, lng) = ({:6.6f}, {:6.6f})'.format(
             i, num_query, round(i / num_query, 2)*100, lat, lng), end=', ')
@@ -92,7 +124,7 @@ if __name__ == "__main__":
             data_dict[key] = data
         print('#data = {:5}'.format(len(data_dict)), end='')
         if i % db_interval == 0 or i == num_query:
-            print('****** insert into DB...', end='\r', flush=True)
+            print('<- DB updated (up to this point)', end='\r', flush=True)
             def _execute_data(json_list):
                 try:
                     cursor.executemany(

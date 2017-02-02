@@ -85,7 +85,7 @@ car_repair
 car_wash
 bicycle_store
 gas_station
-
+parking
 
 # medical
 hospital
@@ -93,7 +93,6 @@ dentist
 doctor
 electrician
 veterinary_care
-parking
 pharmacy
 physiotherapist
 
@@ -101,7 +100,7 @@ physiotherapist
 school
 university
 
-
+#etc
 bowling_alley
 beauty_salon
 laundry
