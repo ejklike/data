@@ -110,40 +110,45 @@ if __name__ == "__main__":
 
     #crawling
     data_dict = {}
-    for i, (lat, lng) in enumerate(product(lat_rng, lng_rng), 1):
-        print('{:6}/{}({:5.1f}%): (lat, lng) = ({:6.6f}, {:6.6f})'.format(
-            i, num_query, round(i / num_query, 2)*100, lat, lng), end=', ')
-        query_result, status = api.run_query(
-            lat=lat,
-            lng=lng,
-            radius=radius
-        )
-        print('status = {:13}'.format(status), end=', ')
-        for data in query_result:
-            key = data['place_id']
-            data_dict[key] = data
-        print('#data = {:5}'.format(len(data_dict)), end='')
-        if i % db_interval == 0 or i == num_query:
-            print('<- DB updated (up to this point)', end='\r', flush=True)
-            def _execute_data(json_list):
-                try:
-                    cursor.executemany(
-                        insert_query.query_string,
-                        insert_query.preprocess(json_list)
-                    )
-                except Exception as ex:
-                    template = (
-                        'An exception of type {0} occured. '
-                        'Arguments:\n{1!r}'
-                    )
-                    message = template.format(type(ex).__name__, ex.args)
-                    print(message)
-            data_list = list(data_dict.values())
-            _execute_data(data_list)
-            conn.commit()
-            data_list = []
-        print('', end='\r\n', flush=True)
-
+    try:
+        for i, (lat, lng) in enumerate(product(lat_rng, lng_rng), 1):
+            print('{:6}/{}({:5.1f}%): (lat, lng) = ({:6.6f}, {:6.6f})'.format(
+                i, num_query, round(i / num_query, 2)*100, lat, lng), end=', ')
+            query_result, status = api.run_query(
+                lat=lat,
+                lng=lng,
+                radius=radius
+            )
+            print('status = {:13}'.format(status), end=', ')
+            for data in query_result:
+                key = data['place_id']
+                data_dict[key] = data
+            print('#data = {:5}'.format(len(data_dict)), end='')
+            if i % db_interval == 0 or i == num_query:
+                print('<- DB updated (up to this point)', end='\r', flush=True)
+                def _execute_data(json_list):
+                    try:
+                        cursor.executemany(
+                            insert_query.query_string,
+                            insert_query.preprocess(json_list)
+                        )
+                    except Exception as ex:
+                        template = (
+                            'An exception of type {0} occured. '
+                            'Arguments:\n{1!r}'
+                        )
+                        message = template.format(type(ex).__name__, ex.args)
+                        print(message)
+                data_list = list(data_dict.values())
+                _execute_data(data_list)
+                conn.commit()
+                data_list = []
+            print('', end='\r\n', flush=True)
+    except KeyboardInterrupt:
+        data_list = list(data_dict.values())
+        _execute_data(data_list)
+        conn.commit()
+        data_list = []
     conn.close()
 
 

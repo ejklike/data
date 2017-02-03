@@ -84,7 +84,7 @@ class NearbySearchCaller(object):
         _result = []
         radius = radius / 2
         interval = radius / (60*60*30) #meter to sec
-        radius = max(int(radius), 1)
+        radius = max(int(radius*1.4), 1)
 
         this_lat_list = [
             lat + interval, lat + interval,
@@ -110,7 +110,7 @@ class NearbySearchCaller(object):
             + '&location={},{}&radius={}'.format(lat, lng, radius)
         _result, status = get_data(_query_url)
 
-        if len(_result) >= 60:
+        if len(_result) >= 60 and radius > 1:
             print('****** #result exceeded 60.')
             more_result = self.run_recursive_query(lat, lng, radius)
             _result += more_result
